@@ -1,0 +1,90 @@
+<?php
+// include the SDK
+require_once 'facebook-php-sdk/src/facebook.php';
+ 
+// Create our Application instance.
+$facebook = new Facebook(array(
+'appId' => '156901744479740',
+'secret' => '367ba3c137deef4c025ca0ba77b268c9',
+'cookie' => true,
+));
+ 
+//Save the user session if exist
+$session = $facebook->getSession();
+ 
+$me = null;
+// Session based API call.
+//check session
+if ($session) {
+try {
+$uid = $facebook->getUser();
+$me = $facebook->api('/me');
+} catch (FacebookApiException $e) {
+error_log($e);
+}
+}
+ 
+// login or logout url will be needed depending on current user state.
+if ($me) {
+$logoutUrl = $facebook->getLogoutUrl();
+} else {
+$loginUrl = $facebook->getLoginUrl();
+header("Location: ". $loginUrl );
+die();
+ 
+}
+ 
+// This call will always work since we are fetching public data.
+ 
+$ankur= $facebook->api('/ankursharma.net');
+ 
+?>
+<!doctype html>
+<html xmlns:fb="http://www.facebook.com/2008/fbml">
+<head>
+<title>Test Application - 7tech.co.in</title>
+<style>
+body {
+font-family: 'Lucida Grande', Verdana, Arial, sans-serif;
+}
+h1 a {
+text-decoration: none;
+color: #3b5998;
+}
+h1 a:hover {
+text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<div id="fb-root"></div>
+<script>
+window.fbAsyncInit = function() {
+FB.init({
+appId   : '<?php echo $facebook->getAppId(); ?>',
+session : <?php echo json_encode($session); ?>, // don't refetch the session when PHP already has it
+status  : true, // check login status
+cookie  : true, // enable cookies to allow the server to access the session
+xfbml   : true // parse XFBML
+});
+ 
+// whenever the user logs in, we refresh the page
+FB.Event.subscribe('auth.login', function() {
+window.location.reload();
+});
+};
+ 
+(function() {
+var e = document.createElement('script');
+e.src = document.location.protocol + '//connect.facebook.net/en_US/all.js';
+e.async = true;
+document.getElementById('fb-root').appendChild(e);
+}());
+</script>
+<h3>Ankur</h3>
+<img src="https://graph.facebook.com/naitik/picture">
+<?php echo $ankur['name']; ?>
+ 
+<div>This Application is Developed by <a href="http://www.ankursharma.net" target="_blank">Ankur Sharma - www.ankursharma.net</a></div>
+</body>
+</html>
